@@ -1,0 +1,50 @@
+CREATE TABLE `diseases` (
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `title` varchar(150) NULL,
+  `description` varchar(2000) NULL,
+  `hindi_description` varchar(2000) COLLATE 'utf8_bin' NULL,
+  `status` tinyint NOT NULL DEFAULT '2' COMMENT '0-Deleted,1-Pending,2-Active,3-InActive'
+);
+
+CREATE TABLE `diet_chart` (
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `title` varchar(150) NULL,
+  `description` varchar(2000) NULL,
+  `hindi_description` varchar(2000) COLLATE 'utf8_bin' NULL,
+  `status` tinyint NOT NULL DEFAULT '2' COMMENT '0-Deleted,1-Pending,2-Active,3-InActive'
+);
+
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE `orders` (
+  `id_order` int(11) NOT NULL AUTO_INCREMENT,
+  `mobile` varchar(15) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `state` varchar(55) DEFAULT NULL,
+  `pin` varchar(15) DEFAULT NULL,
+  `created_at` varchar(55) NOT NULL,
+  `created_by` varchar(55) NOT NULL,
+  `order_no` int(11) DEFAULT NULL,
+  `amount` double(10,2) NOT NULL DEFAULT '0.00',
+  `disc_amount` double(10,2) NOT NULL DEFAULT '0.00',
+  `payable_amount` double(10,2) NOT NULL DEFAULT '0.00',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '1-New,2-Confirmed,3-Delivered,4-Cancelled',
+  `billing_address` varchar(150) NOT NULL,
+  `shipping_address` varchar(150) NOT NULL,
+  `contact_name_no` varchar(150) NOT NULL,
+  `contact_person` varchar(100) NOT NULL,
+  PRIMARY KEY (`id_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP TABLE IF EXISTS `order_details`;
+CREATE TABLE `order_details` (
+  `id_order_details` int(11) NOT NULL AUTO_INCREMENT,
+  `id_order` int(11) NOT NULL DEFAULT '0',
+  `id_product` int(11) NOT NULL DEFAULT '0',
+  `product_name` varchar(150) DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT '0',
+  `price` double(10,2) NOT NULL DEFAULT '0.00',
+  `total` double(10,2) NOT NULL DEFAULT '0.00',
+  PRIMARY KEY (`id_order_details`),
+  KEY `id_order` (`id_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

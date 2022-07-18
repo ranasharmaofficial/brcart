@@ -1,0 +1,46 @@
+<?php
+public function getCategories() {		
+	$sqlQuery = "
+		SELECT category_id, category_name
+		FROM ".$this->productTable." 
+		GROUP BY category_name";
+	return  $this->getData($sqlQuery);
+}
+public function getBrand () {
+	$sql = '';
+	if(isset($_POST['category']) && $_POST['category']!="") {
+		$category = $_POST['category'];
+		$sql.=" WHERE category_id IN ('".implode("','",$category)."')";
+	}
+	$sqlQuery = "
+		SELECT distinct brand
+		FROM ".$this->productTable." 
+		$sql GROUP BY brand";
+	return  $this->getData($sqlQuery);
+}
+public function getMaterial () {
+	$sql = '';
+	if(isset($_POST['brand']) && $_POST['brand']!="") {
+		$brand = $_POST['brand'];
+		$sql.=" WHERE brand IN ('".implode("','",$brand)."')";
+	}
+	$sqlQuery = "
+		SELECT distinct material
+		FROM ".$this->productTable." 
+		$sql GROUP BY material";
+	return  $this->getData($sqlQuery);
+}
+public function getProductSize () {
+	$sql = '';
+	if(isset($_POST['brand']) && $_POST['brand']!="") {
+		$brand = $_POST['brand'];
+		$sql.=" WHERE brand IN ('".implode("','",$brand)."')";
+	}
+	$sqlQuery = "
+		SELECT distinct size
+		FROM ".$this->productTable." 
+		$sql GROUP BY size";
+	return  $this->getData($sqlQuery);
+}
+
+?>

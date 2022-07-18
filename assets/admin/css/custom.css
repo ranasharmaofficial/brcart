@@ -1,0 +1,29 @@
+star{
+	color:red;
+	font-weight: bold;
+}
+.error_prefix
+{
+	color:red;
+}
+.pagination {
+	float:right;
+}
+.pagination li a {
+	padding:4px 8px;
+	border:1px solid #007bff;
+	margin:2px;
+}
+.pagination li a:hover{
+	text-decoration:none;
+	background-color:#007bff;
+	color:#fff;
+}
+
+.pagination li a.current_page{
+	background-color:#007bff;
+	color:#fff;
+}
+body {
+	overflow-x: hidden;
+}

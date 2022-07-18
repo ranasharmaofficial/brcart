@@ -1,0 +1,85 @@
+<?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: Rana Sharma
+ */
+class Vendor extends Admincontroller{
+	function __construct()
+	{
+		parent::__construct();
+		$this->load->model('vendor_model');
+	}
+
+	function index(){
+		redirect(WEB_URL.'dashboard/myDashboard');
+	}
+
+	function all(){
+		$data['getAllVendor'] = array();
+		$data['pvalue'] = array('view'=>'list_view','page_heading'=>'All Seller');
+		$this->loadView($data);
+	}
+
+	function get_vendor_ajax_list($offset=null){
+		$search = array(
+			'keyword' => trim($this->input->post('search_key')),
+		);
+		$this->load->library('pagination');
+
+		$limit = ADM_PER_PAGE_RECORDS;
+		$offset = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+		$postVal = array('limit'=>$limit,'offset'=>$offset,'searchVal'=>$search,'count'=>TRUE);
+		$config['base_url'] = WEB_URL . 'vendor/get_vendor_ajax_list';
+		$config['total_rows'] = $this->vendor_model->getAllVendor($postVal);
+		$config['per_page'] = $limit;
+		$config['uri_segment'] = 3;
+		$config['num_links'] = 3;
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li><a class="current_page" href="">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['next_link'] = 'Next';
+		$config['next_tag_open'] = '<li>';
+		$config['next_tag_close'] = '</li>';
+		$config['prev_link'] = 'Previous';
+		$config['prev_tag_open'] = '<li>';
+		$config['prev_tag_close'] = '</li>';
+		$config['first_link'] = 'First';
+		$config['first_tag_open'] = '<li>';
+		$config['first_tag_close'] = '</li>';
+		$config['last_link'] = 'Last';
+		$config['last_tag_open'] = '<li>';
+		$config['last_tag_close'] = '</li>';
+
+		$this->pagination->initialize($config);
+		$data['pagelinks'] = $this->pagination->create_links();
+		$postVal['count'] = FALSE;
+		$data['getAllVendor'] = $this->vendor_model->getAllVendor($postVal);
+		$this->load->view('list_ajax_view',$data);
+	}
+	function details()
+	{
+		$id = (isset($_GET['id']) && $_GET['id'] > 0)?$_GET['id']:0;
+		$data['row'] = $this->vendor_model->getSellerDetails(array('id'=>$id));
+		$data['totalSellerProduct'] = $this->vendor_model->getTotalSellerProduct(array('id'=>$id));
+		$data['totalSellerOrder'] = $this->vendor_model->getTotalSellerOrder(array('id'=>$id));
+		// $data['user_address_list'] = $this->user_model->getAllUserAddress(array('limit'=>6,'id'=>$id));
+		$data['pvalue'] = array('view'=>'details_view','page_heading'=>'View User Details');
+		$this->loadView($data);
+	}
+	function deleteSingleData()
+	{
+		$student_id = $this->input->post('id');
+		$dataDelete = $this->vendor_model->deleteData('user',array('id'=>$student_id));
+		if($dataDelete==true)
+		{
+			echo 1;
+		}
+		else
+		{
+			echo 2;
+		}
+	}
+//End
+}
+?>

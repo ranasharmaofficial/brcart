@@ -1,0 +1,428 @@
+<?php
+
+class order_model extends MY_Model{
+	function __construct()
+	{
+		parent::__construct();
+	}
+
+	
+	function letsCountorderId($params = array()){
+            $total = 0;
+            $fields = "count(a.id) as totalOrder_id";
+            $this->db->select($fields);
+            $this->db->from(TBL_ORDERS.' a');
+			if(array_key_exists("start",$params) && array_key_exists("limit",$params)){
+			$this->db->limit($params['limit'],$params['start']);
+				}elseif(!array_key_exists("start",$params) && array_key_exists("limit",$params)){
+			$this->db->limit($params['limit']);
+				}
+			if(array_key_exists("id", $params)){
+			$this->db->where('id', $params['id']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0){
+                $row = $query->row_array();
+                $total = $row['totalOrder_id'];
+            }
+		}else{
+			$query = $this->db->get();
+			if($query->num_rows() > 0){
+                $row = $query->row_array();
+                $total = $row['totalOrder_id'];
+            }
+		}
+            return $total;
+    }
+	
+	function getAllOrderedProduct($postVal=array())
+	{
+		$result = array();
+		$fields = "a.*,b.name as product_name,b.photo,s.shop_name";
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_PRODUCT.' b','a.product_id=b.id','inner');
+		$this->db->join(TBL_SELLER.' s','a.seller_id=s.id','inner');
+		$this->db->where('orderid',$postVal['orderid']);
+		$this->db->order_by('a.id', 'DESC');
+		if(isset($postVal['limit']) && $postVal['limit'] > 0) {
+			$this->db->limit($postVal['limit']);
+		}
+		$query = $this->db->get();
+		if($query->num_rows() > 0) {
+			$result = $query->result_array();
+		}
+		return $result;
+	}
+	function getInvoiceLogo(){
+		$total = 0;
+		$fields = "a.invoice_logo as invoiceLogo";
+		
+		$this->db->select($fields);
+		$this->db->from(TBL_LOGO.' a');
+		$query = $this->db->get();
+		if($query->num_rows() > 0){
+			$row = $query->row_array();
+			$total = $row['invoiceLogo'];
+		}
+		return $total;
+    }
+	function getOrderDetails($params = array()){
+		$fields = "a.*,b.delivery_time,b.fullname as user_name,b.mobile,b.house_no,b.address,b.landmark,b.city,b.pin,b.state,b.address_type";
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDERS.' a');
+		$this->db->join(TBL_CUSTOMER_ADDRESS.' b','a.address_id=b.id','left');
+		//set start and limit
+		if(array_key_exists("start",$params) && array_key_exists("limit",$params)){
+			$this->db->limit($params['limit'],$params['start']);
+		}elseif(!array_key_exists("start",$params) && array_key_exists("limit",$params)){
+			$this->db->limit($params['limit']);
+		}
+		if(array_key_exists("id", $params)){
+			$this->db->where('a.id', $params['id']);
+			$query = $this->db->get();
+			$result = ($query->num_rows() > 0)?$query->row_array():FALSE;
+		}else{
+			$query = $this->db->get();
+			$result = ($query->num_rows() > 0)?$query->result_array():FALSE;
+		}
+		//return fetched data
+		return $result;
+	}
+	function getInvoiceDetails($params = array()){
+		$fields = "a.*,d.fullname as user_name,d.mobile,d.house_no,
+		d.address,d.landmark,d.city,d.pin,d.state,d.address_type,
+		b.order_no,a.seller_id,b.total_item,b.user_id,
+		b.address_id,b.total_payment,b.delivery_charge,
+		b.save,b.order_date,b.order_time,b.delivery_status,
+		c.mobile_no,e.mobile_no as seller_mobile,e.shop_name,e.city,e.shop_address,e.state,e.zip,e.email,e.gst,e.pan,f.name as product_name,f.price as p_price,f.gst_percentage,f.previous_price";
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','inner');
+		$this->db->join(TBL_CUSTOMER_ADDRESS.' d','b.address_id=d.id','left');
+		$this->db->join(TBL_SELLER.' e','a.seller_id=e.id','left');
+		$this->db->join(TBL_PRODUCT.' f','a.product_id=f.id','left');
+		//set start and limit
+		if(array_key_exists("start",$params) && array_key_exists("limit",$params)){
+			$this->db->limit($params['limit'],$params['start']);
+		}elseif(!array_key_exists("start",$params) && array_key_exists("limit",$params)){
+			$this->db->limit($params['limit']);
+		}
+		if(array_key_exists("id", $params)){
+			$this->db->where('b.id', $params['id']);
+			$query = $this->db->get();
+			$result = ($query->num_rows() > 0)?$query->row_array():FALSE;
+		}else{
+			$query = $this->db->get();
+			$result = ($query->num_rows() > 0)?$query->result_array():FALSE;
+		}
+		//return fetched data
+		return $result;
+	}
+	
+	function getAllPendingOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('a.delivery_status','1');
+		$this->db->order_by('a.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	function getAllApprovedOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('a.delivery_status','2');
+		$this->db->order_by('a.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	function getAllShippedOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('a.delivery_status','3');
+		$this->db->order_by('a.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	function getAllDeliveredOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('a.delivery_status','4');
+		$this->db->order_by('a.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	
+	function getAllCancelRequestOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('a.delivery_status','5');
+		$this->db->order_by('a.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	
+	function getAllCancelledOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('a.delivery_status','6');
+		$this->db->order_by('a.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	
+	function getAllCodOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('b.payment_mode','COD');
+		$this->db->order_by('b.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	function getAllOnlineOrder($postVal=array())
+	{
+		if($postVal['count']){
+			$result = 0;
+			$fields = "count(a.id) as totalCount";
+		}else{
+			$result = array();
+			$fields = "a.id as order_id,a.orderid,a.product_id,a.qty,a.seller_id,a.product_price,a.total_price,a.delivery_status as deliverystatus,b.*,c.first_name,c.last_name,c.mobile_no,d.name as product_name,";
+		}
+		$this->db->select($fields);
+		$this->db->from(TBL_ORDER_DETAILS.' a');
+		$this->db->join(TBL_ORDERS.' b','a.orderid=b.id','left');
+		$this->db->join(TBL_USER.' c','b.user_id=c.id_user','left');
+		$this->db->join(TBL_PRODUCT.' d','a.product_id=d.id','left');
+		$this->db->where('payment_mode','ONLINE');
+		$this->db->order_by('b.id','DESC');
+		if(is_array($postVal['searchVal']) && count($postVal['searchVal'])){
+			$keyword = $postVal['searchVal']['keyword'];
+			if($keyword){
+				$this->db->like('b.order_no',$keyword,'both');
+			}
+		}
+		if($postVal['count']){
+			$q = $this->db->get();
+			if($q->num_rows() > 0){
+				$row = $q->row_array();
+				$result = $row['totalCount'];
+			}
+		}else {
+			$this->db->limit($postVal['limit'], $postVal['offset']);
+			$query = $this->db->get();
+			if($query->num_rows() > 0) {
+				$result = $query->result_array();
+			}
+		}
+		return $result;
+	}
+	 
+	
+	 
+
+//End
+}
+?>

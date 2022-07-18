@@ -1,0 +1,232 @@
+<?php
+function getIndianCurrency(float $number)
+{
+    $decimal = round($number - ($no = floor($number)), 2) * 100;
+    $hundred = null;
+    $digits_length = strlen($no);
+    $i = 0;
+    $str = array();
+    $words = array(0 => '', 1 => 'one', 2 => 'two',
+        3 => 'three', 4 => 'four', 5 => 'five', 6 => 'six',
+        7 => 'seven', 8 => 'eight', 9 => 'nine',
+        10 => 'ten', 11 => 'eleven', 12 => 'twelve',
+        13 => 'thirteen', 14 => 'fourteen', 15 => 'fifteen',
+        16 => 'sixteen', 17 => 'seventeen', 18 => 'eighteen',
+        19 => 'nineteen', 20 => 'twenty', 30 => 'thirty',
+        40 => 'forty', 50 => 'fifty', 60 => 'sixty',
+        70 => 'seventy', 80 => 'eighty', 90 => 'ninety');
+    $digits = array('', 'hundred','thousand','lakh', 'crore');
+    while( $i < $digits_length ) {
+        $divider = ($i == 2) ? 10 : 100;
+        $number = floor($no % $divider);
+        $no = floor($no / $divider);
+        $i += $divider == 10 ? 1 : 2;
+        if ($number) {
+            $plural = (($counter = count($str)) && $number > 9) ? 's' : null;
+            $hundred = ($counter == 1 && $str[0]) ? ' and ' : null;
+            $str [] = ($number < 21) ? $words[$number].' '. $digits[$counter]. $plural.' '.$hundred:$words[floor($number / 10) * 10].' '.$words[$number % 10]. ' '.$digits[$counter].$plural.' '.$hundred;
+        } else $str[] = null;
+    }
+    $Rupees = implode('', array_reverse($str));
+    $paise = ($decimal > 0) ? "." . ($words[$decimal / 10] . " " . $words[$decimal % 10]) . ' Paise' : '';
+    return ($Rupees ? $Rupees . 'Rupees ' : '') . $paise;
+}
+?>
+<style>
+body {
+    background-color: #000
+}
+
+.padding {
+    padding: 2rem !important
+}
+
+.card {
+    margin-bottom: 30px;
+    border: none;
+    -webkit-box-shadow: 0px 1px 2px 1px rgba(154, 154, 204, 0.22);
+    -moz-box-shadow: 0px 1px 2px 1px rgba(154, 154, 204, 0.22);
+    box-shadow: 0px 1px 2px 1px rgba(154, 154, 204, 0.22)
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #e6e6f2
+}
+
+h3 {
+    font-size: 20px
+}
+
+h5 {
+    font-size: 15px;
+    line-height: 26px;
+    color: #3d405c;
+    margin: 0px 0px 15px 0px;
+    font-family: 'Circular Std Medium'
+}
+
+.text-dark {
+    color: #3d405c !important
+}
+</style>
+<link rel="icon"  type="image/x-icon" href="<?php echo WEB_PATH_ADMIN.'img/favicon.png?v='.CSS_JS_VERSION;?>"/>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+ <div class="offset-xl-2 col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 padding">
+     <div class="card">
+         <div class="card-header p-4">
+             <a class="pt-2 d-inline-block" href="<?php echo WEB_URL; ?>" data-abc="true"><span><img style="height:80px;" src="<?php echo WEB_ATTACHMENT_LOGO_PATH; ?><?php echo $invoiceLogo; ?>"></a>
+             <div class="float-right">
+                 <h5 class="mb-0">Tax invoice/Bill of supply/Cash Memo</br>(Original for Recipient)</h5>
+            </div>
+         </div>
+         <div class="card-body">
+             <div class="row mb-4">
+				<div style="margin-left:20px;" class="col-sm-12">
+					<p class="text-dark mb-1"><small>Digitally Signed by : UBaazar</small></p>
+					<p class="text-dark mb-1"><small>Invoice&nbsp;Date : <?php echo $OrderDetails['order_date']; ?></small></p>
+				</div>
+                 <div class="col-sm-6 pt-2">
+                     <h5 class="mb-1">Sold by:</h5>
+                     <h3 class="text-dark mb-1">UBaazar</h3>
+                     <div>Patna, Bihar</div>
+                  </div>
+				  <div class="col-sm-6 pt-2 ">
+                     <h5 class="mb-3">Shipping Address:</h5>
+                     <h3 class="text-dark mb-1"><?php echo $OrderDetails['user_name']; ?></h3>
+                     <div><?php echo $OrderDetails['house_no']; ?>, <?php echo $OrderDetails['address']; ?>, <?php echo $OrderDetails['landmark']; ?></div>
+                     <div><?php echo $OrderDetails['city']; ?>, <?php echo $OrderDetails['state']; ?>, <?php echo $OrderDetails['pin']; ?></div>
+                     <div>Phone: <?php echo $OrderDetails['mobile']; ?></div>
+                     <div>Address Type: <?php echo $OrderDetails['address_type']; ?></div>
+                     <div>Delivery Time: <?php echo $OrderDetails['delivery_time']; ?></div>
+                 </div>
+				 <div class="col-sm-6 pt-3">
+				 
+                     
+					 <?php if(false) { if(!$OrderDetails['gst']=='') { ?>
+                     <div><strong>GST:&nbsp;</strong></div>
+					 <?php } else { ?>
+					 <?php } } ?>
+                  </div><?php if(false) { ?>
+				 <div class="col-sm-6 pt-3">
+                     <h5 class="mb-3">Billing Address:</h5>
+                     <h3 class="text-dark mb-1"><?php echo $OrderDetails['user_name']; ?></h3>
+                     <div><?php echo $OrderDetails['house_no']; ?>, <?php echo $OrderDetails['address']; ?>, <?php echo $OrderDetails['landmark']; ?></div>
+                     <div><?php echo $OrderDetails['city']; ?>, <?php echo $OrderDetails['state']; ?>, <?php echo $OrderDetails['pin']; ?></div>
+                     <div>Phone: <?php echo $OrderDetails['mobile']; ?></div>
+                     <div><strong>Place of supply:</strong> <span style="text-transform:uppercase;"><?php echo $OrderDetails['state']; ?></span></div>
+                     <div><strong>Place of delivery:</strong> <span style="text-transform:uppercase;"><?php echo $OrderDetails['state']; ?></span></div>
+                 </div><?php } ?>
+				 <div class="col-sm-6 pt-3">
+                     <div><strong>Order Number:&nbsp;</strong><?php echo $OrderDetails['order_no']; ?></div>
+                     <div><strong>Order Date:&nbsp;</strong><?php echo $OrderDetails['order_date']; ?></div>
+                     <div><strong>Payment Mode:&nbsp;</strong>
+					 <?php if($OrderDetails['payment_mode']=='COD') { ?>
+					 Cash on Delivery
+					 <?php } else { ?>Online<?php } ?></div>
+					 
+                  </div>
+				  <div class="col-sm-6 pt-3">
+                     <div><strong>Invoice Number:&nbsp;</strong><?php echo $OrderDetails['order_no']; ?></div>
+                    <div><strong>Invoice Date:&nbsp;</strong><?php echo $OrderDetails['order_date']; ?></div>
+                  </div>
+				
+				 
+             </div>
+             <div class="table-responsive-sm">
+                 <table class="table table-striped">
+                     <thead>
+                         <tr>
+                             <th class="center">Sl.No.</th>
+                             <th>Description</th>
+                             <th class="center">Qty</th>
+                             <th class="right">MRP</th>
+                             <th class="right">Rate</th>
+                             <th class="right">Amount</th>
+                          </tr>
+                     </thead>
+                     <tbody>
+					  <?php
+	 $subTotal=0;
+	 $totalItem=0;
+	 $i=1;
+	 $productSubTotal=0;
+				if(is_array($OrderProduct) && count($OrderProduct) > 0) {
+					foreach ($OrderProduct as $val) {
+						
+						?>
+                         <tr>
+                             <td class="center"><?php echo $i; ?></td>
+                             <td class="left strong"><?php echo $val['product_name'];?></td>
+                             <td class="center"><?php echo $val['qty'];?></td>
+                             <td class="right">Rs&nbsp;<?php echo getNumberFormat($val['previous_price']);?></td>
+                             <td class="right">Rs&nbsp;<?php echo getNumberFormat($val['product_price']);?></td>
+                             <?php $totalMrpAmount=$val['qty']*$val['previous_price'];?>
+                             <?php $totalProductAmount=$val['qty']*$val['product_price'];?>
+                             <?php $totalSave=$totalMrpAmount-$totalProductAmount;?>
+                              <td class="right">Rs&nbsp;<?php echo getNumberFormat($totalProductAmount) ;?></td>
+                              
+                            <?php $productSubTotal = $productSubTotal+$val['qty']*$val['product_price']; ?>
+						</tr>
+						<?php
+				$subTotal=$subTotal+$val['total_price'];
+				$totalItem=$totalItem+1;
+				$i=$i+1;
+					}
+				}	
+					?>
+                          
+                     </tbody>
+                 </table>
+             </div>
+             <div class="row">
+                 <div class="col-lg-4 col-sm-5">
+                 </div>
+                 <div class="col-lg-4 col-sm-5 ml-auto">
+                     <table class="table table-clear">
+                         <tbody>
+								<tr>
+                                 <td class="left">
+                                     <strong class="text-dark">Total Item</strong>
+                                 </td>
+                                 <td class="right"><?php echo $totalItem; ?></td>
+                             </tr>
+                             <tr>
+                                 <td class="left">
+                                     <strong class="text-dark">Net Amount</strong>
+                                 </td>
+                                 <td class="right">Rs&nbsp;<?php echo getNumberFormat($productSubTotal); ?></td>
+                             </tr>
+							 
+                             <tr>
+                                 <td class="left">
+                                     <strong class="text-dark">Delivery Charge</strong>
+                                 </td>
+                                 <td class="right">Rs&nbsp;<?php echo $OrderDetails['delivery_charge']; ?></td>
+                             </tr>
+							 <tr>
+                                 <td class="left">
+                                     <strong class="text-dark">You Saved</strong>
+                                 </td>
+                                 <td class="right">Rs&nbsp;<?php echo getNumberFormat($totalSave) ;?></td>
+                             </tr>
+                             <tr>
+                                 <td class="left">
+                                     <strong class="text-dark">Total Payable</strong> </td>
+                                 <td class="right">
+                                     <strong class="text-dark">Rs&nbsp;<?php echo getNumberFormat($OrderDetails['total_payment']); ?></strong>
+                                 </td>
+                             </tr>
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+         </div>
+		 <div class="card-footer bg-white">
+             <p class="mb-0">This is Computer generated bill, it does not require any signature or stamp.</p>
+         </div>
+	</div>
+ </div>
